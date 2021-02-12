@@ -13,32 +13,33 @@
 #include <sys/time.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <time.h>
 
 double avg_time = 0;
 
 int main(int argc, char *argv[]) {
 
-  clock_t time;
-  unsigned cpu, node;
+  long uid;
+  struct timeval start, end;
+  double temp;
 
-  time = clock();
-    for(int i = 0; i < 2000; i++){
+    for(int i = 1; i < 2001; i++){
+      gettimeofday(&start, NULL);
       if(i == 0){
         printf("Starting...\n");
       }
 
-        syscall(SYS_getcpu, &cpu, &node, NULL);
-        printf("CPU CORE: %u, NUMA NODE: %u\n", cpu, node);
+        uid = syscall(SYS_getuid);
+        printf("User ID: %ld\n", uid);
 
-      if(i == 1999){
+      if(i == 2000){
         printf("Ending...\n");
       }
-
+      gettimeofday(&end, NULL);
+      double seconds = (end.tv_sec - start.tv_sec);
+      temp = ((seconds * 1000000) + end.tv_usec) - start.tv_usec;
+      avg_time = (avg_time + temp);
     }
-
-    time = clock() - time;
-    avg_time = ((double)time)/CLOCKS_PER_SEC;
+    avg_time = avg_time / 2000;
     // Remember to place your final calculated average time
     // per system call into the avg_time variable
 
